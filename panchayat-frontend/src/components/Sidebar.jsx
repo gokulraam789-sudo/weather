@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Map as MapIcon, Sprout, BarChart3, Bell,
-  History as HistoryIcon, Database, Cpu, Settings, ChevronRight,
+  History as HistoryIcon, Database, Cpu, Settings, Menu, X,
 } from "lucide-react";
 
 const NAV = [
@@ -18,49 +18,105 @@ const NAV = [
 ];
 
 export default function Sidebar() {
+  // Controls the slide-in drawer on screens below the lg breakpoint (1024px).
+  // On lg and above, the sidebar is always visible and this state has no effect.
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close the drawer automatically if the window is resized up to desktop width.
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 1024) setMobileOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Close on Escape for accessibility.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e) => e.key === "Escape" && setMobileOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
+
   return (
-    <aside
-      className="w-[240px] shrink-0 hidden lg:flex flex-col"
-      style={{ background: "#0E2A4A", fontFamily: "Arial, Helvetica, sans-serif" }}
-    >
-      <div className="px-5 pt-5 pb-4 flex items-start gap-2.5 border-b" style={{ borderColor: "#1C3E60" }}>
-        <div>
-          <div className="text-[13.5px] font-medium text-white leading-tight">Panchayat Weather<br />Intelligence System</div>
-          <div className="text-[10.5px] text-[#8CA9C6] mt-1 leading-tight">AI-powered Panchayat-level weather downscaling</div>
-        </div>
-      </div>
+    <>
+      {/* Hamburger button — only rendered below the lg breakpoint */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        aria-label="Open menu"
+        className="lg:hidden fixed top-3 left-3 z-40 w-10 h-10 rounded-md flex items-center justify-center shadow-md"
+        style={{ background: "#0E2A4A" }}
+      >
+        <Menu size={20} color="white" />
+      </button>
 
-      <nav className="flex-1 px-3 py-3 overflow-y-auto">
-        {NAV.map((item) => (
-          <NavLink
-            key={item.label}
-            to={item.to}
-            end={item.end}
-            className={({ isActive }) =>
-              "flex items-center gap-2.5 px-2.5 py-2 rounded-sm mb-0.5 transition-colors " +
-              (isActive ? "" : "hover:bg-[#163a5c]")
-            }
-            style={({ isActive }) => ({ background: isActive ? "#1F4A78" : "transparent" })}
+      {/* Backdrop — closes the drawer when tapped */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 lg:hidden"
+          style={{ background: "rgba(0,0,0,0.45)" }}
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      <aside
+        className={
+          "w-[240px] shrink-0 flex flex-col fixed inset-y-0 left-0 z-50 transition-transform duration-300 " +
+          "lg:static lg:translate-x-0 " +
+          (mobileOpen ? "translate-x-0" : "-translate-x-full")
+        }
+        style={{ background: "#0E2A4A", fontFamily: "Arial, Helvetica, sans-serif" }}
+      >
+        <div className="px-5 pt-5 pb-4 flex items-start justify-between gap-2.5 border-b" style={{ borderColor: "#1C3E60" }}>
+          <div>
+            <div className="text-[13.5px] font-medium text-white leading-tight">Panchayat Weather<br />Intelligence System</div>
+            <div className="text-[10.5px] text-[#8CA9C6] mt-1 leading-tight">AI-powered Panchayat-level weather downscaling</div>
+          </div>
+          {/* Close button — only useful (and only shown) on the mobile drawer */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close menu"
+            className="lg:hidden shrink-0 w-7 h-7 rounded-sm flex items-center justify-center"
+            style={{ background: "#163a5c" }}
           >
-            {({ isActive }) => (
-              <>
-                <item.icon size={15} color={isActive ? "#A9D2F5" : "#8CA9C6"} strokeWidth={1.8} />
-                <span className="text-[12.5px]" style={{ color: isActive ? "white" : "#BBD1E8" }}>{item.label}</span>
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
+            <X size={15} color="#BBD1E8" />
+          </button>
+        </div>
 
-      <div className="px-4 pb-4">
-        <div className="rounded-sm p-3 mb-3" style={{ background: "#153454" }}>
-          <div className="text-[11.5px] font-medium text-[#D3E4F5] mb-1">About This System</div>
-          <div className="text-[10.5px] text-[#8CA9C6] leading-snug mb-2">AI-powered downscaling from Block-level to Panchayat-level for better agricultural decisions.</div>
+        <nav className="flex-1 px-3 py-3 overflow-y-auto">
+          {NAV.map((item) => (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              end={item.end}
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                "flex items-center gap-2.5 px-2.5 py-2 rounded-sm mb-0.5 transition-colors " +
+                (isActive ? "" : "hover:bg-[#163a5c]")
+              }
+              style={({ isActive }) => ({ background: isActive ? "#1F4A78" : "transparent" })}
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon size={15} color={isActive ? "#A9D2F5" : "#8CA9C6"} strokeWidth={1.8} />
+                  <span className="text-[12.5px]" style={{ color: isActive ? "white" : "#BBD1E8" }}>{item.label}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="px-4 pb-4">
+          <div className="rounded-sm p-3 mb-3" style={{ background: "#153454" }}>
+            <div className="text-[11.5px] font-medium text-[#D3E4F5] mb-1">About This System</div>
+            <div className="text-[10.5px] text-[#8CA9C6] leading-snug mb-2">AI-powered downscaling from Block-level to Panchayat-level for better agricultural decisions.</div>
+          </div>
+          <div className="rounded-sm p-3" style={{ background: "#2E210F", border: "1px solid #6B4E23" }}>
+            <div className="text-[10.5px] text-[#E4C88C] leading-snug">All data shown here is simulated for demonstration purposes only and should not be used for real-world decisions.</div>
+          </div>
         </div>
-        <div className="rounded-sm p-3" style={{ background: "#2E210F", border: "1px solid #6B4E23" }}>
-          <div className="text-[10.5px] text-[#E4C88C] leading-snug">All data shown here is simulated for demonstration purposes only and should not be used for real-world decisions.</div>
-        </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }
