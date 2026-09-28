@@ -159,9 +159,6 @@ export default function Settings() {
             </div>
           ))
         )}
-        <div className="text-[10.5px] text-[#9AA2AC] mt-2 pt-2 border-t border-[#EDEBE0]">
-          Stored on this device only (no backend yet) — see the About the System note for how this connects once the API is built.
-        </div>
       </Card>
 
       <Card style={{ fontFamily: FONT }}>
